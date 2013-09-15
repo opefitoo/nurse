@@ -12,11 +12,11 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
                 ## Uncomment this for heroku
-        #'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        #'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': '',                      # Or path to database file if using sqlite3.
         ## and comment below
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '/home/big/django-workspace/opefitoo_nurse/db/sqllite3.db',
+        #'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        #'NAME': '/home/big/django-workspace/opefitoo_nurse/db/sqllite3.db',
         
         # The following settings are not used with sqlite3:
         'USER': '',
