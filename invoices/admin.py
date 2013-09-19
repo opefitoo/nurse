@@ -8,7 +8,7 @@ from invoices.models import CareCode, Prestation, Patient
 # 
 
 class CareCoreAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'gross_amount', 'net_amount')
+    list_display = ('code', 'name', 'gross_amount', 'net_amount' , 'is_private')
     search_fields = ['code', 'name']
     
 class PrestationAdmin(admin.ModelAdmin):

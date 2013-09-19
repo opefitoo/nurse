@@ -1,4 +1,5 @@
 from django.db import models
+from setuptools.tests.doctest import is_private
 
 # Create your models here.
 class CareCode(models.Model):
@@ -8,14 +9,19 @@ class CareCode(models.Model):
     # prix net = 88% du montant brut
     # prix brut
     gross_amount = models.DecimalField("montant brut", max_digits=5, decimal_places=2)
+    is_private = models.BooleanField()
     
     @property
     def net_amount(self):
         "Returns the net amount"
+        if self.is_private:
+            return self.gross_amount
         return ((self.gross_amount * 88) / 100 )
 
     def __unicode__(self):  # Python 3: def __str__(self):
-        return self.name    
+        if self.is_private:
+            return self.code + ":" + self.name + " (prive)"
+        return self.code + ":" +self.name  + " (cnss)" 
     
 class Patient(models.Model):
     code_sn = models.CharField(max_length=30)
