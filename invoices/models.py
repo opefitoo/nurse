@@ -9,19 +9,9 @@ class CareCode(models.Model):
     # prix net = 88% du montant brut
     # prix brut
     gross_amount = models.DecimalField("montant brut", max_digits=5, decimal_places=2)
-    is_private = models.BooleanField()
     
-    @property
-    def net_amount(self):
-        "Returns the net amount"
-        if self.is_private:
-            return self.gross_amount
-        return ((self.gross_amount * 88) / 100 )
-
     def __unicode__(self):  # Python 3: def __str__(self):
-        if self.is_private:
-            return self.code + ":" + self.name + " (prive)"
-        return self.code + ":" +self.name  + " (cnss)" 
+        return self.code + ":" +self.name 
     
 class Patient(models.Model):
     code_sn = models.CharField(max_length=30)
@@ -31,6 +21,7 @@ class Patient(models.Model):
     zipcode = models.CharField(max_length=10)
     city = models.CharField(max_length= 30)
     phone_number = models.CharField(max_length=30)
+    participation_statutaire = models.BooleanField()
     def __unicode__(self):  # Python 3: def __str__(self):
         return self.name + " " + self.first_name
     
@@ -38,6 +29,13 @@ class Prestation(models .Model):
     patient = models.ForeignKey(Patient)
     carecode = models.ForeignKey(CareCode)
     date = models.DateTimeField('date')
+    @property
+    def net_amount(self):
+        "Returns the net amount"
+        if not self.patient.participation_statutaire:
+            return self.carecode.gross_amount
+        return ((self.carecode.gross_amount * 88) / 100 )
+    
     def __unicode__(self):  # Python 3: def __str__(self):
         return "code:" + self.carecode.code + "- nom patient:" + self.patient.name
     
