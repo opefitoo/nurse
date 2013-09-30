@@ -4,13 +4,13 @@ from invoices.models import CareCode, Patient, Prestation
 # Create your models here.
 class CareCodeTestCase(TestCase):
     def setUp(self):
-        CareCode.objects.create(code ='code1', 
+        carecode1 = CareCode.objects.create(code ='code1', 
                                name= "code1", 
                                description= "descr", 
                                gross_amount = 10)
         Patient.objects.create(code_sn ='codesn')
         Prestation.objects.create(patient =  Patient.objects.get(code_sn = 'codesn'), 
-                                  carecode = CareCode.objects.get(pk=1))
+                                  carecode = carecode1)
     def test_simple_creation(self):
         code1 = CareCode.objects.get(name = "code1")
         self.assertEqual(code1.code, "code1")
