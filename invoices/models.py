@@ -1,7 +1,9 @@
 from django.db import models
 from setuptools.tests.doctest import is_private
+from django.core.exceptions import ValidationError
 import logging
 import datetime
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +25,12 @@ class Patient(models.Model):
     name = models.CharField(max_length=30)
     address = models.TextField(max_length=30)
     zipcode = models.CharField(max_length=10)
-    city = models.CharField(max_length= 30)
+    city = models.CharField(max_length=30)
     phone_number = models.CharField(max_length=30)
     participation_statutaire = models.BooleanField()
     def __unicode__(self):  # Python 3: def __str__(self):
         return '%s %s' % (self.first_name, self.name)
-
+    
 class Prestation(models .Model):
     patient = models.ForeignKey(Patient)
     carecode = models.ForeignKey(CareCode)
@@ -38,7 +40,7 @@ class Prestation(models .Model):
         "Returns the net amount"
         if not self.patient.participation_statutaire:
             return self.carecode.gross_amount
-        return ((self.carecode.gross_amount * 88) / 100 )
+        return ((self.carecode.gross_amount * 88) / 100)    
     
 #     def save(self, *args, **kwargs):
 #         q = InvoiceItem.objects.filter(invoice_paid = False).select_related()        
@@ -58,13 +60,52 @@ class Prestation(models .Model):
     
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
-    
+
 class InvoiceItem(models.Model):
-    invoice_number = models.CharField(max_length = 50)
-    date = models.DateField('Invoice date')
+    invoice_number = models.CharField(max_length=50)
+    invoice_date = models.DateField('Invoice date')
     invoice_sent = models.BooleanField()
     invoice_paid = models.BooleanField()
-    invoice_item = models.ForeignKey(Prestation)
+    patient = models.ForeignKey(Patient, related_name='patient')
+    prestations = models.ManyToManyField(Prestation, related_name='prestations', editable=False, null=True, blank=True)
+    def save(self, *args, **kwargs):
+        super(InvoiceItem, self).save(*args, **kwargs)
+        if self.pk is not None:
+            print 'patient pk = %s' % self.patient.pk
+            prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(patient__pk=self.patient.pk)
+            for p in prestationsq:
+                self.prestations.add(p)
+            super(InvoiceItem, self).save(*args, **kwargs)
+    def display_prestations(self):
+        return ', '.join([a.date.strftime('%m/%d/%Y') + a.patient.name for a in self.prestations.all()])
+    
+    def __get_patients_without_invoice(self, current_month):
+        qinvoices_of_current_month = InvoiceItem.objects.filter(date__month=current_month.month)
+        patients_pks_having_an_invoice = list()
+        for i in qinvoices_of_current_month:
+            patients_pks_having_an_invoice.append(i.patient.pk)
+        return patients_pks_having_an_invoice
+    
+    def clean(self):
+        # # don't allow patient to have more than one invoice for a month
+        iq = InvoiceItem.objects.filter(patient__pk=self.patient.pk).filter(Q(invoice_date__month=self.invoice_date.month))
+        if iq.exists():
+            raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
+        prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(patient__pk=self.patient.pk)
+        if not prestationsq.exists():
+            raise ValidationError('Cannot create an invoice for month ''%s'' because there were no medical service ' % self.invoice_date.strftime('%B'))
+
     def __unicode__(self):  # Python 3: def __str__(self):
-        return 'invoice# %s' % (self.invoice_number)
+        return 'invocie no.: %s - nom patient: %s' % (self.invoice_number , self.patient)
+        
+            
+        
+        
+            
+        
+        
+        self.prestations = q
+        
+    def __unicode__(self):  # Python 3: def __str__(self):
+        return 'invoice# %s' % (self.invoice_number)    
     
