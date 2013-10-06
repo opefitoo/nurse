@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms 
 from invoices.models import CareCode, Prestation, Patient, InvoiceItem
+from django.contrib.admin.views.decorators import staff_member_required
 
 class CareCoreAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'gross_amount' )
@@ -15,11 +16,12 @@ class PrestationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     list_display = ('patient', 'carecode', 'date', 'net_amount')
     search_fields = ['patient__name', 'patient__first_name']
+    list_filter = ('patient__name', )
 
-class InvoiceItemAdminForm(admin.ModelAdmin):
+class InvoiceItemAdmin(admin.ModelAdmin):
     list_display = ('invoice_number', 'patient', 'display_prestations')
     
 admin.site.register(CareCode, CareCoreAdmin)
 admin.site.register(Prestation, PrestationAdmin)
 admin.site.register(Patient, PatientAdmin)
-admin.site.register(InvoiceItem, InvoiceItemAdminForm)
+admin.site.register(InvoiceItem, InvoiceItemAdmin)
