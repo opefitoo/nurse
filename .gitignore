@@ -3,4 +3,5 @@ venv
 staticfiles
 .project
 .pydevproject
+.settings
 
