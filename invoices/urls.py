@@ -2,6 +2,9 @@ from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from ajax_select import urls as ajax_select_urls
+
+from invoices import views
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -14,4 +17,10 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^pdf_report/', views.pdf_report, name='pdf_report'),
+     # include the lookup urls
+    url(r'^admin/lookups/', include(ajax_select_urls)),
+    url(r'^admin/', include(admin.site.urls)),
+    #url(r'admin/invoices/invoiceitem/pdf_report/(?P<invoice_item>\w+)/$', views.pdf_report, name='pdf_report')
+
 )

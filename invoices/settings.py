@@ -127,6 +127,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ajax_select',
     # Uncomment the next line to enable the admin:
     'django_admin_bootstrapped',
     'django.contrib.admin',
@@ -185,3 +186,12 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+# define the lookup channels in use on the site
+AJAX_LOOKUP_CHANNELS = {
+    #  simple: search Person.objects.filter(name__icontains=q)
+    'patient'  : {'model': 'models.Patient', 'search_field': 'name'},
+    # define a custom lookup channel
+    #'patientsamoi'   : ('lookups', 'PatientLookup'),
+    'prestation'   : {'model': 'invoices.prestation', 'search_field': 'date'},
+}

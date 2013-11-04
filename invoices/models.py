@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 import logging
 import datetime
 from django.db.models import Q
+import pytz
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +31,9 @@ class Patient(models.Model):
     phone_number = models.CharField(max_length=30)
     participation_statutaire = models.BooleanField()
     def __unicode__(self):  # Python 3: def __str__(self):
-        return '%s %s' % (self.first_name, self.name)
+        return '%s %s' % ( self.name.strip() , self.first_name.strip() )
     
-class Prestation(models .Model):
+class Prestation(models.Model):
     patient = models.ForeignKey(Patient)
     carecode = models.ForeignKey(CareCode)
     date = models.DateTimeField('date')
@@ -67,7 +69,9 @@ class InvoiceItem(models.Model):
     invoice_sent = models.BooleanField()
     invoice_paid = models.BooleanField()
     patient = models.ForeignKey(Patient, related_name='patient')
-    prestations = models.ManyToManyField(Prestation, related_name='prestations', editable=False, null=True, blank=True)
+    prestations = models.ManyToManyField(Prestation, related_name='prestations')
+                                          #editable=False, null=True, blank=True)
+    url = models.URLField(blank=True)
     def save(self, *args, **kwargs):
         super(InvoiceItem, self).save(*args, **kwargs)
         if self.pk is not None:
@@ -76,8 +80,12 @@ class InvoiceItem(models.Model):
             for p in prestationsq:
                 self.prestations.add(p)
             super(InvoiceItem, self).save(*args, **kwargs)
-    def display_prestations(self):
-        return ', '.join([a.date.strftime('%m/%d/%Y') + a.patient.name for a in self.prestations.all()])
+    def prestations_invoiced(self):
+        pytz_chicago = pytz.timezone("America/Chicago")
+        return ', '.join([a.carecode.code + pytz_chicago.normalize(a.date).strftime(':%m/%d/%Y') for a in self.prestations.all()])
+    @property
+    def invoice_month(self):
+        return self.invoice_date.strftime("%B %Y")
     
     def __get_patients_without_invoice(self, current_month):
         qinvoices_of_current_month = InvoiceItem.objects.filter(date__month=current_month.month)
@@ -97,15 +105,4 @@ class InvoiceItem(models.Model):
 
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'invocie no.: %s - nom patient: %s' % (self.invoice_number , self.patient)
-        
-            
-        
-        
-            
-        
-        
-        self.prestations = q
-        
-    def __unicode__(self):  # Python 3: def __str__(self):
-        return 'invoice# %s' % (self.invoice_number)    
     
