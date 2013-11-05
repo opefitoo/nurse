@@ -4,7 +4,6 @@ from invoices.models import CareCode, Prestation, Patient, InvoiceItem
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
 
-
 class CareCoreAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'gross_amount')
     search_fields = ['code', 'name']

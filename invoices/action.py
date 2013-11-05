@@ -9,6 +9,7 @@ from reportlab.platypus.flowables import Spacer
 from reportlab.platypus.para import Paragraph
 from reportlab.platypus.tables import Table, TableStyle
 import pytz
+from django.utils.encoding import smart_unicode
 
 def export_to_pdf(modeladmin, request, queryset):
     # Create the HttpResponse object with the appropriate PDF headers.
@@ -83,7 +84,7 @@ def export_to_pdf(modeladmin, request, queryset):
                    'Nom: %s' % patientName.strip() +'\n'
                    + 'Pr' + u"é".encode("utf-8") + 'nom: %s' % patientFirstName.strip() +'\n'
                    + 'Rue: %s' % patientAddress.strip() + '\n'
-                   + 'Code postal: %s' % patientZipCode.strip() + '\n'
+                   + 'Code postal: %s' % smart_unicode(patientZipCode.strip()) + '\n'
                    + 'Ville: %s' % patientCity.strip().encode("utf8") ],
                   ['Date accident:\n'
                    + 'Num. accident:']]
