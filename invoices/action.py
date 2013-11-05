@@ -85,7 +85,7 @@ def export_to_pdf(modeladmin, request, queryset):
                    + 'Pr' + u"é".encode("utf-8") + 'nom: %s' % patientFirstName.strip() +'\n'
                    + 'Rue: %s' % patientAddress.strip() + '\n'
                    + 'Code postal: %s' % smart_unicode(patientZipCode.strip()) + '\n'
-                   + 'Ville: %s' % patientCity.strip().encode("utf8") ],
+                   + 'Ville: %s' % smart_unicode(patientCity.strip()) ],
                   ['Date accident:\n'
                    + 'Num. accident:']]
     
