@@ -30,7 +30,7 @@ class InvoiceItemAdmin(AjaxSelectAdmin):
     list_filter =  ['invoice_date', 'patient__name']
     search_fields = ['patient']
     actions = [export_to_pdf]
-    form = make_ajax_form(InvoiceItem,{'prestations':'prestation'})
+    form = make_ajax_form(InvoiceItem,{'patient':'patient'})
 admin.site.register(InvoiceItem, InvoiceItemAdmin)
 
 

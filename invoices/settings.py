@@ -190,8 +190,9 @@ STATICFILES_DIRS = (
 # define the lookup channels in use on the site
 AJAX_LOOKUP_CHANNELS = {
     #  simple: search Person.objects.filter(name__icontains=q)
-    'patient'  : {'model': 'models.Patient', 'search_field': 'name'},
+    # 'patient'  : {'model': 'invoices.patient', 'search_field': 'name'},
     # define a custom lookup channel
     #'patientsamoi'   : ('lookups', 'PatientLookup'),
-    'prestation'   : {'model': 'invoices.prestation', 'search_field': 'date'},
+    'patient': ('lookups', 'PatientLookup'),
+    #'prestation'   : {'model': 'invoices.prestation', 'search_field': 'date'},
 }

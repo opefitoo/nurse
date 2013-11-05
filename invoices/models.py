@@ -1,8 +1,6 @@
 from django.db import models
-from setuptools.tests.doctest import is_private
 from django.core.exceptions import ValidationError
 import logging
-import datetime
 from django.db.models import Q
 import pytz
 
@@ -30,6 +28,25 @@ class Patient(models.Model):
     city = models.CharField(max_length=30)
     phone_number = models.CharField(max_length=30)
     participation_statutaire = models.BooleanField()
+    
+    def get_patients_that_have_prestations(self, monthyear):
+        ##XXX use this later for raw sql
+#         Patient.objects.raw("select p.name, p.first_name " 
+#         + " from public.invoices_patient p, public.invoices_prestation prest"
+#         + " where p.id = prest.patient_id"
+#         + " and prest.date between '2013-10-01'::DATE and '2013-10-31'::DATE group by p.id" % (start_date, end_date)
+        
+        patients_sans_facture = Patient.objects.raw("select p.name, p.first_name "+  
+        "from public.invoices_patient p, public.invoices_prestation prest "+
+        "where p.id = prest.patient_id "+
+        "and prest.date between '2013-10-01'::DATE and '2013-10-31'::DATE "+ 
+        "and (select count(inv.id) from public.invoices_invoiceitem inv "+
+        "where inv.invoice_date between '2013-10-01'::DATE and '2013-10-31'::DATE "+ 
+        "and inv.patient_id = p.id) = 0 "+
+        "group by p.id "+
+        "order by p.name")
+        return patients_sans_facture
+       
     def __unicode__(self):  # Python 3: def __str__(self):
         return '%s %s' % ( self.name.strip() , self.first_name.strip() )
     
@@ -44,22 +61,6 @@ class Prestation(models.Model):
             return self.carecode.gross_amount
         return ((self.carecode.gross_amount * 88) / 100)    
     
-#     def save(self, *args, **kwargs):
-#         q = InvoiceItem.objects.filter(invoice_paid = False).select_related()        
-#         q.filter(prestation__patient = self.patient)
-#         if not q:
-#             newInvoice = InvoiceItem.objects.create(invoice_number = len(self.patient.name),
-#                                        date = datetime.date.today(),
-#                                        invoice_sent = False,
-#                                        invoice_paid = False)
-#             newInvoice.save()
-#             invoice_item = newInvoice
-#             print "***** q is emtpy"
-#             super(Prestation, self).save(*args, **kwargs) # Call the "real" save() method.        
-#         else:
-#             print "**** q is  %s" % q
-#             super(Prestation, self).save(*args, **kwargs) # Call the "real" save() method.
-    
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
 
@@ -68,22 +69,22 @@ class InvoiceItem(models.Model):
     invoice_date = models.DateField('Invoice date')
     invoice_sent = models.BooleanField()
     invoice_paid = models.BooleanField()
-    patient = models.ForeignKey(Patient, related_name='patient')
-    prestations = models.ManyToManyField(Prestation, related_name='prestations')
-                                          #editable=False, null=True, blank=True)
-    url = models.URLField(blank=True)
+    patient = models.ForeignKey(Patient, related_name='patient', help_text='choisir parmi ces patients pour le mois precedent')
+    prestations = models.ManyToManyField(Prestation, related_name='prestations', editable=False, null=True, blank=True)
+    
     def save(self, *args, **kwargs):
         super(InvoiceItem, self).save(*args, **kwargs)
         if self.pk is not None:
-            print 'patient pk = %s' % self.patient.pk
-            prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(patient__pk=self.patient.pk)
+            print '********** patient pk = %s' % self.patient.pk
+            prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
             for p in prestationsq:
                 self.prestations.add(p)
             super(InvoiceItem, self).save(*args, **kwargs)
+    
     def prestations_invoiced(self):
         pytz_chicago = pytz.timezone("America/Chicago")
         return ', '.join([a.carecode.code + pytz_chicago.normalize(a.date).strftime(':%m/%d/%Y') for a in self.prestations.all()])
-    @property
+    @property   
     def invoice_month(self):
         return self.invoice_date.strftime("%B %Y")
     
@@ -96,12 +97,14 @@ class InvoiceItem(models.Model):
     
     def clean(self):
         # # don't allow patient to have more than one invoice for a month
-        iq = InvoiceItem.objects.filter(patient__pk=self.patient.pk).filter(Q(invoice_date__month=self.invoice_date.month))
+        iq = InvoiceItem.objects.filter(patient__pk=self.patient.pk).filter(
+                                                                            Q(invoice_date__month=self.invoice_date.month) & Q(invoice_date__year=self.invoice_date.year)
+                                                                            )
         if iq.exists():
             raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
-        prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(patient__pk=self.patient.pk)
+        prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
         if not prestationsq.exists():
-            raise ValidationError('Cannot create an invoice for month ''%s'' because there were no medical service ' % self.invoice_date.strftime('%B'))
+            raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
 
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'invocie no.: %s - nom patient: %s' % (self.invoice_number , self.patient)
