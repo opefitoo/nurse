@@ -79,10 +79,10 @@ def export_to_pdf(modeladmin, request, queryset):
                    'CODE DU FOURNISSEUR DE SOINS DE SANTE\n'
                    + '300744-44'
                    ], 
-                  ['Matricule patient: %s' % patientSocNumber.strip() + "\n" 
-                   + u'Nom et Pr'+ u"e".encode("utf-8") + u'nom du patient: %s' % patientNameAndFirstName ,
-                   u'Nom: %s' % patientName.strip() +'\n'
-                   + u'Pr' + u"é".encode("utf-8") + u'nom: %s' % patientFirstName.strip() +'\n'
+                  [ u'Matricule patient: %s' % smart_unicode(patientSocNumber.strip()) + "\n" 
+                   + u'Nom et Pr'+ smart_unicode("e") + u'nom du patient: %s' % smart_unicode(patientNameAndFirstName) ,
+                   u'Nom: %s' % smart_unicode(patientName.strip()) +'\n'
+                   + u'Pr' + smart_unicode(u"é") + u'nom: %s' % smart_unicode(patientFirstName.strip()) +'\n'
                    + u'Rue: %s' % patientAddress.strip() + '\n'
                    + u'Code postal: %s' % smart_unicode(patientZipCode.strip()) + '\n'
                    + u'Ville: %s' % smart_unicode(patientCity.strip()) ],
