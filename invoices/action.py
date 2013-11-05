@@ -79,7 +79,7 @@ def export_to_pdf(modeladmin, request, queryset):
                    + '300744-44'
                    ], 
                   ['Matricule patient: %s' % patientSocNumber.strip() + "\n" 
-                   + 'Nom et Pr'+ u"é".encode("utf-8") + 'nom du patient: %s' % patientNameAndFirstName ,
+                   + 'Nom et Pr'+ u"e".encode("utf-8") + 'nom du patient: %s' % patientNameAndFirstName ,
                    'Nom: %s' % patientName.strip() +'\n'
                    + 'Pr' + u"é".encode("utf-8") + 'nom: %s' % patientFirstName.strip() +'\n'
                    + 'Rue: %s' % patientAddress.strip() + '\n'
