@@ -80,14 +80,14 @@ def export_to_pdf(modeladmin, request, queryset):
                    + '300744-44'
                    ], 
                   ['Matricule patient: %s' % patientSocNumber.strip() + "\n" 
-                   + 'Nom et Pr'+ u"e".encode("utf-8") + 'nom du patient: %s' % patientNameAndFirstName ,
-                   'Nom: %s' % patientName.strip() +'\n'
-                   + 'Pr' + u"é".encode("utf-8") + 'nom: %s' % patientFirstName.strip() +'\n'
-                   + 'Rue: %s' % patientAddress.strip() + '\n'
-                   + 'Code postal: %s' % smart_unicode(patientZipCode.strip()) + '\n'
-                   + 'Ville: %s' % smart_unicode(patientCity.strip()) ],
-                  ['Date accident:\n'
-                   + 'Num. accident:']]
+                   + u'Nom et Pr'+ u"e".encode("utf-8") + u'nom du patient: %s' % patientNameAndFirstName ,
+                   u'Nom: %s' % patientName.strip() +'\n'
+                   + u'Pr' + u"é".encode("utf-8") + u'nom: %s' % patientFirstName.strip() +'\n'
+                   + u'Rue: %s' % patientAddress.strip() + '\n'
+                   + u'Code postal: %s' % smart_unicode(patientZipCode.strip()) + '\n'
+                   + u'Ville: %s' % smart_unicode(patientCity.strip()) ],
+                  [u'Date accident:\n'
+                   + u'Num. accident:']]
     
     headerTable = Table(headerData, 2*[10*cm], [2.5*cm, 1*cm, 1.5*cm] )
     headerTable.setStyle(TableStyle([('ALIGN',(1,1),(-2,-2),'LEFT'),
