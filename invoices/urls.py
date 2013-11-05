@@ -17,8 +17,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
      # include the lookup urls
-    url(r'^admin/lookups/', include(ajax_select_urls)),
-    url(r'^admin/', include(admin.site.urls)),
+    (r'^admin/lookups/', include(ajax_select_urls)),
     #url(r'admin/invoices/invoiceitem/pdf_report/(?P<invoice_item>\w+)/$', views.pdf_report, name='pdf_report')
 
 )
