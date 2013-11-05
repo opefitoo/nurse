@@ -74,14 +74,14 @@ def export_to_pdf(modeladmin, request, queryset):
                    + 'Regine SIMBA\n'
                    + '1A, rue fort wallis\n'
                    + 'L-2714 Luxembourg\n'
-                   + 'T' + "é".encode("utf-8") + "l: 691.30.85.84", 
+                   + 'T' + u"é".encode("utf-8") + "l: 691.30.85.84", 
                    'CODE DU FOURNISSEUR DE SOINS DE SANTE\n'
                    + '300744-44'
                    ], 
                   ['Matricule patient: %s' % patientSocNumber.strip() + "\n" 
-                   + 'Nom et Pr'+"é".encode("utf-8") + 'nom du patient: %s' % patientNameAndFirstName ,
+                   + 'Nom et Pr'+u"é".encode("utf-8") + 'nom du patient: %s' % patientNameAndFirstName ,
                    'Nom: %s' % patientName.strip() +'\n'
-                   + 'Pr' + "é".encode("utf-8") + 'nom: %s' % patientFirstName.strip() +'\n'
+                   + 'Pr' + u"é".encode("utf-8") + 'nom: %s' % patientFirstName.strip() +'\n'
                    + 'Rue: %s' % patientAddress.strip() + '\n'
                    + 'Code postal: %s' % patientZipCode.strip() + '\n'
                    + 'Ville: %s' % patientCity.strip() ],
