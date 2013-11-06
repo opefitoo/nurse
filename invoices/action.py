@@ -13,7 +13,12 @@ from django.utils.encoding import smart_unicode
 
 def export_to_pdf(modeladmin, request, queryset):
     # Create the HttpResponse object with the appropriate PDF headers.
-    
+    #import pydevd; pydevd.settrace()
+    if len(queryset) != 1:
+        from django.contrib import messages
+        messages.error(request, "Seulement une facture a la fois pour le moment")
+        return messages
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="anotherfilename.pdf"'
 
