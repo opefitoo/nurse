@@ -21,6 +21,7 @@ def export_to_pdf(modeladmin, request, queryset):
 
     pytz_chicago = pytz.timezone("America/Chicago")
     response = HttpResponse(content_type='application/pdf')
+    # Append invoice number and invoice date
     response['Content-Disposition'] = 'attachment; filename="invoice-%s-%s-%s.pdf"' %(queryset[0].patient.name, 
                                                                                       queryset[0].invoice_number, 
                                                                                       queryset[0].invoice_date.strftime('%d-%m-%Y'))
