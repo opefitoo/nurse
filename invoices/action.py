@@ -28,7 +28,7 @@ def export_to_pdf(modeladmin, request, queryset):
     
     elements = []
     
-    dd = [queryset[0].prestations.all()[i:i+20] for i in range(0, len(queryset[0].prestations.all()), 20)]
+    dd = [queryset[0].prestations.all().order_by("date")[i:i+20] for i in range(0, len(queryset[0].prestations.all()), 20)]
     #elements.append(PageBreak())
     doc = SimpleDocTemplate(response, rightMargin=2*cm, leftMargin=2 * cm, topMargin=1 * cm, bottomMargin=1*cm)
     for _prestations in dd:
