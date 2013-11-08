@@ -66,6 +66,8 @@ class Prestation(models.Model):
 
 class InvoiceItem(models.Model):
     invoice_number = models.CharField(max_length=50)
+    accident_id = models.CharField(max_length=30, help_text=u"Numero d'accident est facultatif", null=True, blank=True)
+    accident_date = models.DateField( help_text=u"Date d'accident est facultatif", null=True, blank=True)
     invoice_date = models.DateField('Invoice date')
     invoice_sent = models.BooleanField()
     invoice_paid = models.BooleanField()
@@ -75,7 +77,6 @@ class InvoiceItem(models.Model):
     def save(self, *args, **kwargs):
         super(InvoiceItem, self).save(*args, **kwargs)
         if self.pk is not None:
-            print '********** patient pk = %s' % self.patient.pk
             prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
             for p in prestationsq:
                 self.prestations.add(p)
