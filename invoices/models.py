@@ -59,7 +59,15 @@ class Prestation(models.Model):
         "Returns the net amount"
         if not self.patient.participation_statutaire:
             return self.carecode.gross_amount
-        return ((self.carecode.gross_amount * 88) / 100)    
+        return ((self.carecode.gross_amount * 88) / 100)
+    
+    def clean(self):
+        "if same prestation same date same code same patient, disallow creation"
+        prestationsq = Prestation.objects.filter(date=self.date).filter(patient__pk=self.patient.pk).filter(carecode__pk=self.carecode.pk)
+        if prestationsq.exists():
+            raise ValidationError('Cannot create medical service "code:%s on:%s for:%s" because is already exists' % (self.carecode,
+                                                                                                                            self.date.strftime('%d-%m-%Y'),
+                                                                                                                            self.patient ))
     
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
