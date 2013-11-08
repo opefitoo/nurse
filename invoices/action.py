@@ -19,7 +19,6 @@ def export_to_pdf(modeladmin, request, queryset):
         messages.error(request, "Seulement une facture a la fois pour le moment")
         return messages
 
-    pytz_chicago = pytz.timezone("America/Chicago")
     response = HttpResponse(content_type='application/pdf')
     # Append invoice number and invoice date
     response['Content-Disposition'] = 'attachment; filename="invoice-%s-%s-%s.pdf"' %(queryset[0].patient.name, 
