@@ -13,31 +13,30 @@ from django.utils.encoding import smart_unicode
 
 def export_to_pdf(modeladmin, request, queryset):
     # Create the HttpResponse object with the appropriate PDF headers.
-    #import pydevd; pydevd.settrace()
-    if len(queryset) != 1:
-        from django.contrib import messages
-        messages.error(request, "Seulement une facture a la fois pour le moment")
-        return messages
-
     response = HttpResponse(content_type='application/pdf')
     # Append invoice number and invoice date
-    response['Content-Disposition'] = 'attachment; filename="invoice-%s-%s-%s.pdf"' %(queryset[0].patient.name, 
-                                                                                      queryset[0].invoice_number, 
-                                                                                      queryset[0].invoice_date.strftime('%d-%m-%Y'))
-
+    if len(queryset) != 1:
+        _file_name = '-'.join([a.patient.name + a.invoice_number for a in queryset])
+        response['Content-Disposition'] = 'attachment; filename="invoice%s.pdf"' %(_file_name)
+    else:
+        response['Content-Disposition'] = 'attachment; filename="invoice-%s-%s-%s.pdf"' %(queryset[0].patient.name, 
+                                                                                          queryset[0].invoice_number, 
+                                                                                          queryset[0].invoice_date.strftime('%d-%m-%Y'))
     
     elements = []
-    
-    dd = [queryset[0].prestations.all().order_by("date")[i:i+20] for i in range(0, len(queryset[0].prestations.all()), 20)]
-    #elements.append(PageBreak())
     doc = SimpleDocTemplate(response, rightMargin=2*cm, leftMargin=2 * cm, topMargin=1 * cm, bottomMargin=1*cm)
-    for _prestations in dd:
-        elements.extend(_build_dd(_prestations, 
-                                  queryset[0].invoice_number, 
-                                  queryset[0].invoice_date, 
-                                  queryset[0].accident_id, 
-                                  queryset[0].accident_date ))
-        elements.append(PageBreak())
+
+    for qs in queryset:
+        dd = [qs.prestations.all().order_by("date")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
+        for _prestations in dd:
+            print dd.index(_prestations)
+            _inv = qs.invoice_number + (("-" + str(dd.index(_prestations) + 1)) if len(dd) > 1 else "")
+            elements.extend(_build_dd(_prestations, 
+                                      _inv, 
+                                      qs.invoice_date, 
+                                      qs.accident_id, 
+                                      qs.accident_date ))
+            elements.append(PageBreak())
     
     doc.build(elements)
     return response
