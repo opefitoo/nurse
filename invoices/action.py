@@ -29,7 +29,6 @@ def export_to_pdf(modeladmin, request, queryset):
     for qs in queryset:
         dd = [qs.prestations.all().order_by("date")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
         for _prestations in dd:
-            print dd.index(_prestations)
             _inv = qs.invoice_number + (("-" + str(dd.index(_prestations) + 1)) if len(dd) > 1 else "")
             elements.extend(_build_dd(_prestations, 
                                       _inv, 
