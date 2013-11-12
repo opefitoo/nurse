@@ -27,7 +27,8 @@ def export_to_pdf(modeladmin, request, queryset):
     doc = SimpleDocTemplate(response, rightMargin=2*cm, leftMargin=2 * cm, topMargin=1 * cm, bottomMargin=1*cm)
 
     for qs in queryset:
-        dd = [qs.prestations.all().order_by("carecode__gross_amount").order_by("date")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
+        dd = [qs.prestations.all().order_by("carecode__gross_amount")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
+        #dd = [qs.prestations.all().order_by("carecode__gross_amount").order_by("date")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
         for _prestations in dd:
             _inv = qs.invoice_number + (("" + str(dd.index(_prestations) + 1) + qs.invoice_date.strftime('%m%Y')) if len(dd) > 1 else "")
             elements.extend(_build_dd(_prestations, 
@@ -85,8 +86,8 @@ def _build_dd(prestations, invoice_number, invoice_date, accident_id, accident_d
     for y in range(0, len(data) -1) :
         newData.append(data[y])
         if(y % 10 == 0 and y != 0):
-            _gross_sum = _compute_sum(data[y-9:y], 4)
-            _net_sum = _compute_sum(data[y-9:y], 5)
+            _gross_sum = _compute_sum(data[y-9:y+1], 4)
+            _net_sum = _compute_sum(data[y-9:y+1], 5)
             newData.append(('', '', '', 'Sous-Total', _gross_sum, _net_sum, '', '',''))
     newData.append(('', '', '', 'Total', _compute_sum(data[1:], 4), _compute_sum(data[1:], 5), '', '',''))
             
