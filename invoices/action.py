@@ -27,8 +27,7 @@ def export_to_pdf(modeladmin, request, queryset):
     doc = SimpleDocTemplate(response, rightMargin=2*cm, leftMargin=2 * cm, topMargin=1 * cm, bottomMargin=1*cm)
 
     for qs in queryset:
-        dd = [qs.prestations.all().order_by("carecode__gross_amount")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
-        #dd = [qs.prestations.all().order_by("carecode__gross_amount").order_by("date")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
+        dd = [qs.prestations.all().order_by("carecode__gross_amount").order_by("date")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
         for _prestations in dd:
             _inv = qs.invoice_number + (("" + str(dd.index(_prestations) + 1) + qs.invoice_date.strftime('%m%Y')) if len(dd) > 1 else "")
             elements.extend(_build_dd(_prestations, 
