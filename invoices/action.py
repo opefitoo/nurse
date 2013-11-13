@@ -17,7 +17,7 @@ def export_to_pdf(modeladmin, request, queryset):
     # Append invoice number and invoice date
     if len(queryset) != 1:
         _file_name = '-'.join([a.patient.name + a.invoice_number for a in queryset])
-        response['Content-Disposition'] = 'attachment; filename="invoice%s.pdf"' %(_file_name.replace(" ", "")[:255])
+        response['Content-Disposition'] = 'attachment; filename="invoice%s.pdf"' %(_file_name.replace(" ", "")[:50])
     else:
         response['Content-Disposition'] = 'attachment; filename="invoice-%s-%s-%s.pdf"' %(queryset[0].patient.name, 
                                                                                           queryset[0].invoice_number, 
