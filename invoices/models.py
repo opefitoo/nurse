@@ -54,7 +54,7 @@ class Prestation(models.Model):
     patient = models.ForeignKey(Patient)
     carecode = models.ForeignKey(CareCode)
     date = models.DateTimeField('date')
-    @property
+    @property   
     def net_amount(self):
         "Returns the net amount"
         if not self.patient.participation_statutaire:
@@ -65,9 +65,11 @@ class Prestation(models.Model):
         "if same prestation same date same code same patient, disallow creation"
         prestationsq = Prestation.objects.filter(date=self.date).filter(patient__pk=self.patient.pk).filter(carecode__pk=self.carecode.pk)
         if prestationsq.exists():
-            raise ValidationError('Cannot create medical service "code:%s on:%s for:%s" because is already exists' % (self.carecode,
-                                                                                                                            self.date.strftime('%d-%m-%Y'),
-                                                                                                                            self.patient ))
+            for presta_in_db in prestationsq:
+                if(presta_in_db.pk != self.pk):
+                    raise ValidationError('Cannot create medical service "code:%s on:%s for:%s" because is already exists' % (self.carecode,
+                                                                                                                              self.date.strftime('%d-%m-%Y'),
+                                                                                                                              self.patient ))
     
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
@@ -110,7 +112,9 @@ class InvoiceItem(models.Model):
                                                                             Q(invoice_date__month=self.invoice_date.month) & Q(invoice_date__year=self.invoice_date.year)
                                                                             )
         if iq.exists():
-            raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
+            for presta_in_db in iq:
+                if(presta_in_db.pk != self.pk):
+                    raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
         prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
         if not prestationsq.exists():
             raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
