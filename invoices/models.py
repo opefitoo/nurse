@@ -74,8 +74,17 @@ class Prestation(models.Model):
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
 
+def get_default_invoice_number():
+        for _last_invoice in InvoiceItem.objects.all().order_by("-invoice_number"):
+            try:
+                _n = int(_last_invoice.invoice_number)
+                return _n+1
+            except:
+                pass
+        return 00000
+    
 class InvoiceItem(models.Model):
-    invoice_number = models.CharField(max_length=50)
+    invoice_number = models.CharField(max_length=50, default = get_default_invoice_number)
     accident_id = models.CharField(max_length=30, help_text=u"Numero d'accident est facultatif", null=True, blank=True)
     accident_date = models.DateField( help_text=u"Date d'accident est facultatif", null=True, blank=True)
     invoice_date = models.DateField('Invoice date')
@@ -93,8 +102,6 @@ class InvoiceItem(models.Model):
             super(InvoiceItem, self).save(*args, **kwargs)
     
     def prestations_invoiced(self):
-        pytz_chicago = pytz.timezone("America/Chicago")
-        #return ', '.join([a.carecode.code + pytz_chicago.normalize(a.date).strftime(':%m/%d/%Y') for a in self.prestations.all()])
         return '%s prestations. Total = %s' % (len(self.prestations.all()), sum(a.net_amount for a in self.prestations.all()))
     @property   
     def invoice_month(self):
@@ -121,6 +128,9 @@ class InvoiceItem(models.Model):
             prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
             if not prestationsq.exists():
                 raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
+            invoice_items = InvoiceItem.objects.filter(invoice_number=self.invoice_number)
+            if invoice_items.exists():
+                raise ValidationError('Already and invoice with this number ''%s ''  ' % self.invoice_number)
         super(InvoiceItem, self).clean()
 
     def __unicode__(self):  # Python 3: def __str__(self):
