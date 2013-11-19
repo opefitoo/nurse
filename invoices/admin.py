@@ -21,7 +21,7 @@ class PrestationAdmin(AjaxSelectAdmin):
     list_display = ('patient', 'carecode', 'date')
     search_fields = ['patient__name', 'patient__first_name']
     list_filter = ('patient__name',)
-    form = make_ajax_form( Prestation, {'patient': 'patient'})
+    form = make_ajax_form( Prestation, {'patient': 'patient', 'carecode' : 'carecode'})
 admin.site.register(Prestation, PrestationAdmin)
         
 class InvoiceItemAdmin(AjaxSelectAdmin):

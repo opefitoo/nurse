@@ -195,4 +195,5 @@ AJAX_LOOKUP_CHANNELS = {
     #'patientsamoi'   : ('lookups', 'PatientLookup'),
     'patient_du_mois': ('invoices.lookups', 'PatientDuMoisLookup'),
     'patient'   : ('invoices.lookups', 'PatientLookup'),
+    'carecode'   : ('invoices.lookups', 'CareCodeLookup'),
 }
