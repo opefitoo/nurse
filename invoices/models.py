@@ -106,18 +106,21 @@ class InvoiceItem(models.Model):
             patients_pks_having_an_invoice.append(i.patient.pk)
         return patients_pks_having_an_invoice
     
-    def clean(self):
+    def clean(self, *args, **kwargs):
         # # don't allow patient to have more than one invoice for a month
-        iq = InvoiceItem.objects.filter(patient__pk=self.patient.pk).filter(
-                                                                            Q(invoice_date__month=self.invoice_date.month) & Q(invoice_date__year=self.invoice_date.year)
-                                                                            )
-        if iq.exists():
-            for presta_in_db in iq:
-                if(presta_in_db.pk != self.pk):
-                    raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
-        prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
-        if not prestationsq.exists():
-            raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
+        #import pydevd; pydevd.settrace()
+        if hasattr(self, 'patient') and hasattr(self, 'invoice_date') and self.invoice_date is not None:
+            iq = InvoiceItem.objects.filter(patient__pk=self.patient.pk).filter(
+                                                                                Q(invoice_date__month=self.invoice_date.month) & Q(invoice_date__year=self.invoice_date.year)
+                                                                                )
+            if iq.exists():
+                for presta_in_db in iq:
+                    if(presta_in_db.pk != self.pk):
+                        raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
+            prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
+            if not prestationsq.exists():
+                raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
+        super(InvoiceItem, self).clean()
 
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'invocie no.: %s - nom patient: %s' % (self.invoice_number , self.patient)
