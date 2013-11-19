@@ -193,6 +193,6 @@ AJAX_LOOKUP_CHANNELS = {
     # 'patient'  : {'model': 'invoices.patient', 'search_field': 'name'},
     # define a custom lookup channel
     #'patientsamoi'   : ('lookups', 'PatientLookup'),
-    'patient': ('invoices.lookups', 'PatientLookup'),
-    #'prestation'   : {'model': 'invoices.prestation', 'search_field': 'date'},
+    'patient_du_mois': ('invoices.lookups', 'PatientDuMoisLookup'),
+    'patient'   : ('invoices.lookups', 'PatientLookup'),
 }

@@ -16,11 +16,12 @@ class PatientAdmin(admin.ModelAdmin):
     search_fields = ['name', 'first_name', 'code_sn']
 admin.site.register(Patient, PatientAdmin)
     
-class PrestationAdmin(admin.ModelAdmin):
+class PrestationAdmin(AjaxSelectAdmin):
     date_hierarchy = 'date'
     list_display = ('patient', 'carecode', 'date')
     search_fields = ['patient__name', 'patient__first_name']
     list_filter = ('patient__name',)
+    form = make_ajax_form( Prestation, {'patient': 'patient'})
 admin.site.register(Prestation, PrestationAdmin)
         
 class InvoiceItemAdmin(AjaxSelectAdmin):
@@ -29,7 +30,7 @@ class InvoiceItemAdmin(AjaxSelectAdmin):
     list_filter =  ['invoice_date', 'patient__name']
     search_fields = ['patient']
     actions = [export_to_pdf]
-    form = make_ajax_form(InvoiceItem,{'patient':'patient'})
+    form = make_ajax_form(InvoiceItem,{'patient':'patient_du_mois'})
 admin.site.register(InvoiceItem, InvoiceItemAdmin)
 
 

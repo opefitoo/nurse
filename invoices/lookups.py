@@ -2,8 +2,9 @@ from ajax_select import LookupChannel
 
 from invoices.models import Patient
 from django.utils.html import escape
+from django.db.models.query_utils import Q
 
-class PatientLookup(LookupChannel):
+class PatientDuMoisLookup(LookupChannel):
 
     model = Patient
 
@@ -17,6 +18,26 @@ class PatientLookup(LookupChannel):
         "and inv.patient_id = p.id) = 0 "+
         "group by p.id "+
         "order by p.name")
+
+    def get_result(self, obj):
+        u""" result is the simple text that is the completion of what the person typed """
+        return obj.name
+
+    def format_match(self, obj):
+        """ (HTML) formatted item for display in the dropdown """
+        return u"%s<div><i>%s</i></div>" % (escape(obj.name), escape(obj.first_name))
+        # return self.format_item_display(obj)
+
+    def format_item_display(self, obj):
+        """ (HTML) formatted item for displaying item in the selected deck area """
+        return u"%s<div><i>%s</i></div>" % (escape(obj.name), escape(obj.first_name))
+    
+class PatientLookup(LookupChannel):
+
+    model = Patient
+
+    def get_query(self, q, request):
+        return Patient.objects.filter(Q(name__icontains=q) | Q(first_name__icontains=q)).order_by('name')
 
     def get_result(self, obj):
         u""" result is the simple text that is the completion of what the person typed """
