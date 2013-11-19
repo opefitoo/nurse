@@ -18,7 +18,7 @@ admin.site.register(Patient, PatientAdmin)
     
 class PrestationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
-    list_display = ('patient', 'carecode', 'date', 'net_amount')
+    list_display = ('patient', 'carecode', 'date')
     search_fields = ['patient__name', 'patient__first_name']
     list_filter = ('patient__name',)
 admin.site.register(Prestation, PrestationAdmin)

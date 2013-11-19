@@ -94,7 +94,8 @@ class InvoiceItem(models.Model):
     
     def prestations_invoiced(self):
         pytz_chicago = pytz.timezone("America/Chicago")
-        return ', '.join([a.carecode.code + pytz_chicago.normalize(a.date).strftime(':%m/%d/%Y') for a in self.prestations.all()])
+        #return ', '.join([a.carecode.code + pytz_chicago.normalize(a.date).strftime(':%m/%d/%Y') for a in self.prestations.all()])
+        return '%s prestations. Total = %s' % (len(self.prestations.all()), sum(a.net_amount for a in self.prestations.all()))
     @property   
     def invoice_month(self):
         return self.invoice_date.strftime("%B %Y")
