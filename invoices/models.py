@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import logging
 from django.db.models import Q
-import pytz
+# from invoices.widgets import MyAdminSplitDateTime
 
 
 logger = logging.getLogger(__name__)
@@ -54,12 +54,16 @@ class Prestation(models.Model):
     patient = models.ForeignKey(Patient)
     carecode = models.ForeignKey(CareCode)
     date = models.DateTimeField('date')
+#     formfield_overrides = {
+#         models.DateTimeField: {'widget': MyAdminSplitDateTime},
+#     }
     @property   
     def net_amount(self):
         "Returns the net amount"
         if not self.patient.participation_statutaire:
             return self.carecode.gross_amount
-        return ((self.carecode.gross_amount * 88) / 100)
+        # round to only two decimals
+        return round(((self.carecode.gross_amount * 88) / 100), 2)
     
     def clean(self):
         "if same prestation same date same code same patient, disallow creation"
