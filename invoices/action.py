@@ -10,6 +10,7 @@ from reportlab.platypus.para import Paragraph
 from reportlab.platypus.tables import Table, TableStyle
 import pytz
 from django.utils.encoding import smart_unicode
+import decimal
 
 def export_to_pdf(modeladmin, request, queryset):
     # Create the HttpResponse object with the appropriate PDF headers.
@@ -25,22 +26,51 @@ def export_to_pdf(modeladmin, request, queryset):
     
     elements = []
     doc = SimpleDocTemplate(response, rightMargin=2*cm, leftMargin=2 * cm, topMargin=1 * cm, bottomMargin=1*cm)
+    
+    recapitulatif_data = []
 
     for qs in queryset.order_by("invoice_number"):
         dd = [qs.prestations.all().order_by("date", "carecode__gross_amount")[i:i+20] for i in range(0, len(qs.prestations.all()), 20)]
         for _prestations in dd:
             _inv = qs.invoice_number + (("" + str(dd.index(_prestations) + 1) + qs.invoice_date.strftime('%m%Y')) if len(dd) > 1 else "")
-            elements.extend(_build_dd(_prestations, 
+            _result = _build_invoices(_prestations, 
                                       _inv, 
                                       qs.invoice_date, 
                                       qs.accident_id, 
-                                      qs.accident_date ))
+                                      qs.accident_date )
+                                      
+            elements.extend(_result["elements"])
+            recapitulatif_data.append((_result["invoice_number"], _result["patient_name"], _result["invoice_amount"]))
             elements.append(PageBreak())
-    
+    elements.extend(_build_recap(recapitulatif_data))
     doc.build(elements)
     return response
 
-def _build_dd(prestations, invoice_number, invoice_date, accident_id, accident_date):
+def _build_recap(recaps):
+    """
+    """
+    elements = []
+    data = []
+    i = 0
+    data.append(("No d'ordre", u"Note no°", u"Nom et prénom", "Montant", u"réservé à la caisse"))
+    total = 0.0
+    #import pydevd; pydevd.settrace()
+    for recap in recaps:
+        i+=1
+        data.append((i, recap[0], recap[1], recap[2], ""))
+        total = decimal.Decimal(total) + decimal.Decimal(recap[2])
+    data.append(("", "", u"à reporter", round(total, 2), ""))
+
+    table = Table(data, [2*cm, 2*cm , 8*cm, 3*cm, 3*cm], (i+2)*[0.5*cm] )
+    table.setStyle(TableStyle([('ALIGN',(1,1),(-2,-2),'LEFT'),
+                       ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                       ('FONTSIZE', (0,0), (-1,-1), 9),
+                       ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                       ]))
+    elements.append(table)
+    return elements
+
+def _build_invoices(prestations, invoice_number, invoice_date, accident_id, accident_date):
     # Draw things on the PDF. Here's where the PDF generation happens.
     # See the ReportLab documentation for the full list of functionality.
     #import pydevd; pydevd.settrace()
@@ -52,8 +82,7 @@ def _build_dd(prestations, invoice_number, invoice_date, accident_id, accident_d
     patientName = '';
     patientFirstName = '';
     patientAddress = ''
-#     invoiceNumber = queryset[0].invoice_number
-#     invoiceDate = queryset[0].invoice_date
+
     data.append(('Num. titre', 'Prestation', 'Date', 'Nombre', 'Brut', 'Net', 'Heure', 'P. Pers','Executant'))
     #import pydevd; pydevd.settrace()
     pytz_chicago = pytz.timezone("America/Chicago")
@@ -128,7 +157,7 @@ def _build_dd(prestations, invoice_number, invoice_date, accident_id, accident_d
                        ('FONTSIZE', (0,0), (-1,-1), 8),
                        ('BOX', (0,0), (-1,-1), 0.25, colors.black),
                        ]))
-    
+
     elements.append(headerTable)
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name='Center', alignment=TA_CENTER))
@@ -163,7 +192,10 @@ def _build_dd(prestations, invoice_number, invoice_date, accident_id, accident_d
     _pouracquit_signature = Table([["Pour acquit, le:", "Signature et cachet"]], [10*cm, 10*cm], 1*[0.5*cm], hAlign='LEFT')
     
     elements.append(_pouracquit_signature)
-    return elements
+    return {"elements" : elements
+            , "invoice_number" : invoice_number
+            , "patient_name" : patientName + " " + patientFirstName
+            , "invoice_amount" : newData[23][5]}
 
 export_to_pdf.short_description = "Export results to PDF"
 
