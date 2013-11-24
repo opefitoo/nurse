@@ -134,7 +134,9 @@ class InvoiceItem(models.Model):
                 raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
             invoice_items = InvoiceItem.objects.filter(invoice_number=self.invoice_number)
             if invoice_items.exists():
-                raise ValidationError('Already and invoice with this number ''%s ''  ' % self.invoice_number)
+                for invoice in invoice_items:
+                    if invoice.pk != self.pk:
+                        raise ValidationError( 'Already an invoice with this number ''%s ''  ' % self.invoice_number)
         super(InvoiceItem, self).clean()
 
     def __unicode__(self):  # Python 3: def __str__(self):
