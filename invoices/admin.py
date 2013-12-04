@@ -26,6 +26,7 @@ admin.site.register(Prestation, PrestationAdmin)
         
 class InvoiceItemAdmin(AjaxSelectAdmin):
     from action import export_to_pdf
+    date_hierarchy = 'invoice_date'
     list_display = ('invoice_number', 'patient', 'invoice_month', 'prestations_invoiced', 'invoice_sent' )
     list_filter =  ['invoice_date', 'patient__name', 'invoice_sent']
     search_fields = ['patient']
