@@ -1,10 +1,15 @@
-from django.db import models
-from django.core.exceptions import ValidationError
+import datetime
 import logging
+
+from django.core.exceptions import ValidationError
+from django.db import models
 from django.db.models import Q
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+import pytz
+
+
 # from invoices.widgets import MyAdminSplitDateTime
-
-
 logger = logging.getLogger(__name__)
 
 # Create your models here.
@@ -99,10 +104,14 @@ class InvoiceItem(models.Model):
     
     def save(self, *args, **kwargs):
         super(InvoiceItem, self).save(*args, **kwargs)
+        pytz_chicago = pytz.timezone("America/Chicago")
         if self.pk is not None:
-            prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
+            #import pydevd; pydevd.settrace()
+            prestationsq = Prestation.objects.filter(Q(date__month=self.invoice_date.month-1) | Q(date__month=self.invoice_date.month) | Q(date__month=self.invoice_date.month+1)).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
             for p in prestationsq:
-                self.prestations.add(p)
+                normalized_date = pytz_chicago.normalize(p.date)
+                if normalized_date.month == self.invoice_date.month:
+                    self.prestations.add(p)                
             super(InvoiceItem, self).save(*args, **kwargs)
     
     def prestations_invoiced(self):
