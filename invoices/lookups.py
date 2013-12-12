@@ -12,9 +12,9 @@ class PatientDuMoisLookup(LookupChannel):
         return Patient.objects.raw("select p.id, p.name, p.first_name "+  
         "from public.invoices_patient p, public.invoices_prestation prest "+
         "where p.id = prest.patient_id "+
-        "and prest.date between '2013-11-01'::DATE and '2013-11-30'::DATE "+ 
+        "and prest.date between '2013-09-01'::DATE and '2013-09-30'::DATE "+ 
         "and (select count(inv.id) from public.invoices_invoiceitem inv "+
-        "where inv.invoice_date between '2013-11-01'::DATE and '2013-11-30'::DATE "+ 
+        "where inv.invoice_date between '2013-09-01'::DATE and '2013-09-30'::DATE "+ 
         "and inv.patient_id = p.id) = 0 "+
         "group by p.id "+
         "order by p.name")
