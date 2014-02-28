@@ -15,7 +15,7 @@ class PatientDuMoisLookup(LookupChannel):
         "and prest.date between '2014-01-01'::DATE and '2014-02-01'::DATE "+ 
         "and (select count(inv.id) from public.invoices_invoiceitem inv "+
         "where inv.invoice_date between '2014-01-01'::DATE and '2014-01-31'::DATE "+ 
-        "and inv.patient_id = p.id) = 0 "+
+        "and inv.patient_id = p.id) = 0 or p.name like '%" + :q + "%' "
         "group by p.id "+
         "order by p.name")
 
