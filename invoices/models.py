@@ -1,11 +1,8 @@
-import datetime
 import logging
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 import pytz
 
 
@@ -20,6 +17,8 @@ class CareCode(models.Model):
     # prix net = 88% du montant brut
     # prix brut
     gross_amount = models.DecimalField("montant brut", max_digits=5, decimal_places=2)
+    #previous_gross_amount = models.DecimalField("Ancien montant brut", max_digits=5, decimal_places=2)
+    #price_switch_date = models.DateField( help_text=u"Date d'accident est facultatif", null=True, blank=True)
     
     def __unicode__(self):  # Python 3: def __str__(self):
         return '%s: %s' % (self.code, self.name) 
@@ -65,10 +64,26 @@ class Prestation(models.Model):
     @property   
     def net_amount(self):
         "Returns the net amount"
-        if not self.patient.participation_statutaire:
-            return self.carecode.gross_amount
+        pytz_chicago = pytz.timezone("America/Chicago")
+        #normalized_price_switch_date = pytz_chicago.normalize( self.carecode.price_switch_date )
+        #if self.date > normalized_price_switch_date:
+            # round to only two decimals
+         #   return round(((self.carecode.gross_amount * 88) / 100), 2)
         # round to only two decimals
+        #return round(((self.carecode.previous_gross_amount * 88) / 100), 2)
         return round(((self.carecode.gross_amount * 88) / 100), 2)
+
+    @property   
+    def fin_part(self):
+        "Returns the financial participation of the client"
+        pytz_chicago = pytz.timezone("America/Chicago")
+        normalized_price_switch_date = pytz_chicago.normalize( self.carecode.price_switch_date )
+        if not self.patient.participation_statutaire:
+            return 0
+        # round to only two decimals
+        if self.date > normalized_price_switch_date:
+            return round(((self.carecode.gross_amount * 12) / 100), 2)
+        return round(((self.carecode.previous_gross_amount * 12) / 100), 2)
     
     def clean(self):
         "if same prestation same date same code same patient, disallow creation"
@@ -140,7 +155,7 @@ class InvoiceItem(models.Model):
                         raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
             prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
             if not prestationsq.exists():
-                raise ValidationError('Cannot create an invoice for ''%s '' because there were no medical service ' % self.invoice_date.strftime('%B-%Y'))
+                raise ValidationError('Cannot create an invoice for this perdiod ''%s ''  for this patient ''%s'' because there were no medical service ' % (self.invoice_date.strftime('%B-%Y'),  self.patient))
             invoice_items = InvoiceItem.objects.filter(invoice_number=self.invoice_number)
             if invoice_items.exists():
                 for invoice in invoice_items:
