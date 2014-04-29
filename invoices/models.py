@@ -64,26 +64,25 @@ class Prestation(models.Model):
     @property   
     def net_amount(self):
         "Returns the net amount"
-        pytz_chicago = pytz.timezone("America/Chicago")
         #normalized_price_switch_date = pytz_chicago.normalize( self.carecode.price_switch_date )
         #if self.date > normalized_price_switch_date:
             # round to only two decimals
          #   return round(((self.carecode.gross_amount * 88) / 100), 2)
         # round to only two decimals
         #return round(((self.carecode.previous_gross_amount * 88) / 100), 2)
-        return round(((self.carecode.gross_amount * 88) / 100), 2)
+        return round(((self.carecode.gross_amount * 88) / 100), 2) + self.fin_part
 
     @property   
     def fin_part(self):
         "Returns the financial participation of the client"
         #pytz_chicago = pytz.timezone("America/Chicago")
         #normalized_price_switch_date = pytz_chicago.normalize( self.carecode.price_switch_date )
-        if not self.patient.participation_statutaire:
+        if self.patient.participation_statutaire:
             return 0
         # round to only two decimals
         #if self.date > normalized_price_switch_date:
         #    return round(((self.carecode.gross_amount * 12) / 100), 2)
-        return round(((self.carecode.previous_gross_amount * 12) / 100), 2)
+        return round(((self.carecode.gross_amount * 12) / 100), 2)
     
     def clean(self):
         "if same prestation same date same code same patient, disallow creation"
