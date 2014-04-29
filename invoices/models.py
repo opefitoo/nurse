@@ -76,13 +76,13 @@ class Prestation(models.Model):
     @property   
     def fin_part(self):
         "Returns the financial participation of the client"
-        pytz_chicago = pytz.timezone("America/Chicago")
-        normalized_price_switch_date = pytz_chicago.normalize( self.carecode.price_switch_date )
+        #pytz_chicago = pytz.timezone("America/Chicago")
+        #normalized_price_switch_date = pytz_chicago.normalize( self.carecode.price_switch_date )
         if not self.patient.participation_statutaire:
             return 0
         # round to only two decimals
-        if self.date > normalized_price_switch_date:
-            return round(((self.carecode.gross_amount * 12) / 100), 2)
+        #if self.date > normalized_price_switch_date:
+        #    return round(((self.carecode.gross_amount * 12) / 100), 2)
         return round(((self.carecode.previous_gross_amount * 12) / 100), 2)
     
     def clean(self):
