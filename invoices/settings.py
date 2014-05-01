@@ -81,6 +81,8 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+#ADMIN_MEDIA_PREFIX =                      'site_media/js/admin'
+
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
@@ -194,6 +196,7 @@ AJAX_LOOKUP_CHANNELS = {
     # define a custom lookup channel
     #'patientsamoi'   : ('lookups', 'PatientLookup'),
     'patient_du_mois': ('invoices.lookups', 'PatientDuMoisLookup'),
+    'private_patient_a_facturer': ('invoices.lookups', 'PrivatePatientDuMoisLookup'),
     'patient'   : ('invoices.lookups', 'PatientLookup'),
     'carecode'   : ('invoices.lookups', 'CareCodeLookup'),
 }

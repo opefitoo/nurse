@@ -99,7 +99,7 @@ class Prestation(models.Model):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
 
 def get_default_invoice_number():
-        for _last_invoice in InvoiceItem.objects.all().order_by("-invoice_number"):
+        for _last_invoice in PrivateInvoiceItem.objects.all().order_by("-invoice_number"):
             try:
                 _n = int(_last_invoice.invoice_number)
                 return _n+1
@@ -166,3 +166,68 @@ class InvoiceItem(models.Model):
     def __unicode__(self):  # Python 3: def __str__(self):
         return 'invocie no.: %s - nom patient: %s' % (self.invoice_number , self.patient)
     
+class PrivateInvoiceItem(models.Model):
+    invoice_number = models.CharField(max_length=50, default = get_default_invoice_number)
+    accident_id = models.CharField(max_length=30, help_text=u"Numero d'accident est facultatif", null=True, blank=True)
+    accident_date = models.DateField( help_text=u"Date d'accident est facultatif", null=True, blank=True)
+    invoice_date = models.DateField('Date facture')
+    invoice_send_date = models.DateField('Date envoi facture', null=True, blank=True)
+    medical_prescription_date = models.DateField('Date ordonnance', null=True, blank=True)
+    invoice_sent = models.BooleanField()
+    invoice_paid = models.BooleanField()
+    private_patient = models.ForeignKey(Patient, related_name='private_invoice_patient', help_text='choisir parmi ces patients pour le mois precedent')
+    prestations = models.ManyToManyField(Prestation, related_name='private_invoice_prestations', editable=False, null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        super(PrivateInvoiceItem, self).save(*args, **kwargs)
+        pytz_chicago = pytz.timezone("America/Chicago")
+        if self.pk is not None:
+            #import pydevd; pydevd.settrace()
+            prestationsq = Prestation.objects.raw("select prestations.id from invoices_prestation prestations "+ 
+                                                  "where prestations.patient_id = %s " %(self.private_patient.pk) + 
+                                                  "and prestations.id not in ( " +
+                                                  "select pp.prestation_id "+ 
+                                                  "from public.invoices_privateinvoiceitem priv, public.invoices_privateinvoiceitem_prestations pp "+
+                                                  "group by pp.prestation_id)" )
+            for p in prestationsq:
+                normalized_date = pytz_chicago.normalize(p.date)
+                if normalized_date.month == self.invoice_date.month:
+                    self.prestations.add(p)                
+            super(PrivateInvoiceItem, self).save(*args, **kwargs)
+    
+    def prestations_invoiced(self):
+        return '%s prestations. Total = %s' % (len(self.prestations.all()), sum(a.net_amount for a in self.prestations.all()))
+    @property   
+    def invoice_month(self):
+        return self.invoice_date.strftime("%B %Y")
+    
+    def __get_patients_without_invoice(self, current_month):
+        qinvoices_of_current_month = InvoiceItem.objects.filter(date__month=current_month.month)
+        patients_pks_having_an_invoice = list()
+        for i in qinvoices_of_current_month:
+            patients_pks_having_an_invoice.append(i.patient.pk)
+        return patients_pks_having_an_invoice
+    
+    def clean(self, *args, **kwargs):
+        # # don't allow patient to have more than one invoice for a month
+        #import pydevd; pydevd.settrace()
+        if hasattr(self, 'patient') and hasattr(self, 'invoice_date') and self.invoice_date is not None:
+            iq = InvoiceItem.objects.filter(patient__pk=self.patient.pk).filter(
+                                                                                Q(invoice_date__month=self.invoice_date.month) & Q(invoice_date__year=self.invoice_date.year)
+                                                                                )
+            if iq.exists():
+                for presta_in_db in iq:
+                    if(presta_in_db.pk != self.pk):
+                        raise ValidationError('Patient %s has already an invoice for the month ''%s'' ' % (self.patient , self.invoice_date.strftime('%B')))
+            prestationsq = Prestation.objects.filter(date__month=self.invoice_date.month).filter(date__year=self.invoice_date.year).filter(patient__pk=self.patient.pk)
+            if not prestationsq.exists():
+                raise ValidationError('Cannot create an invoice for this perdiod ''%s ''  for this patient ''%s'' because there were no medical service ' % (self.invoice_date.strftime('%B-%Y'),  self.patient))
+            invoice_items = InvoiceItem.objects.filter(invoice_number=self.invoice_number)
+            if invoice_items.exists():
+                for invoice in invoice_items:
+                    if invoice.pk != self.pk:
+                        raise ValidationError( 'Already an invoice with this number ''%s ''  ' % self.invoice_number)
+        super(PrivateInvoiceItem, self).clean()
+
+    def __unicode__(self):  # Python 3: def __str__(self):
+        return 'invocie no.: %s - nom patient: %s' % (self.invoice_number , self.private_patient)

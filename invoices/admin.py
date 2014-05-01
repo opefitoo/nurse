@@ -1,8 +1,10 @@
-from django.contrib import admin
-
-from invoices.models import CareCode, Prestation, Patient, InvoiceItem
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
+from django.contrib import admin
+
+from invoices.models import CareCode, Prestation, Patient, InvoiceItem, \
+    PrivateInvoiceItem
+
 
 class CareCoreAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'gross_amount')
@@ -35,5 +37,15 @@ class InvoiceItemAdmin(AjaxSelectAdmin):
     actions = [export_to_pdf,  previous_months_invoices_february,  previous_months_invoices_march]
     form = make_ajax_form(InvoiceItem,{'patient':'patient_du_mois'})
 admin.site.register(InvoiceItem, InvoiceItemAdmin)
+
+class PrivateInvoiceItemAdmin(AjaxSelectAdmin):
+    from action_private import pdf_private_invoice
+    date_hierarchy = 'invoice_date'
+    list_display = ('invoice_number', 'private_patient', 'invoice_month', 'prestations_invoiced', 'invoice_sent' )
+    list_filter =  ['invoice_date', 'private_patient__name', 'invoice_sent']
+    search_fields = ['private_patient']
+    actions = [pdf_private_invoice]
+    form = make_ajax_form(PrivateInvoiceItem,{'private_patient':'private_patient_a_facturer'})
+admin.site.register(PrivateInvoiceItem, PrivateInvoiceItemAdmin)
 
 
