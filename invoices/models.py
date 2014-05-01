@@ -32,6 +32,7 @@ class Patient(models.Model):
     city = models.CharField(max_length=30)
     phone_number = models.CharField(max_length=30)
     participation_statutaire = models.BooleanField()
+    private_patient = models.BooleanField( default=False )
     
     def get_patients_that_have_prestations(self, monthyear):
         ##XXX use this later for raw sql
@@ -70,7 +71,7 @@ class Prestation(models.Model):
          #   return round(((self.carecode.gross_amount * 88) / 100), 2)
         # round to only two decimals
         #return round(((self.carecode.previous_gross_amount * 88) / 100), 2)
-        return round(((self.carecode.gross_amount * 88) / 100), 2) + self.fin_part
+        return round(((self.carecode.gross_amount * 88) / 100) , 2) + self.fin_part 
 
     @property   
     def fin_part(self):
