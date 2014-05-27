@@ -21,10 +21,11 @@ def previous_months_invoices_march(modeladmin, request, queryset):
     
     response = HttpResponse(content_type='text')
     
-    previous_month_patients = Patient.objects.raw("select p.id, p    .name, p.first_name "+  
+    previous_month_patients = Patient.objects.raw("select p.id, p.name, p.first_name "+  
         "from public.invoices_patient p, public.invoices_prestation prest "+
         "where p.id = prest.patient_id "+
         "and prest.date between '2014-03-01'::DATE and '2014-03-31'::DATE "+ 
+        "and p.private_patient = 'f' "+
         "and (select count(inv.id) from public.invoices_invoiceitem inv "+
         "where inv.invoice_date between '2014-03-01'::DATE and '2014-03-31'::DATE "+ 
         "and inv.patient_id = p.id) = 0" + 
@@ -45,10 +46,11 @@ def previous_months_invoices_february(modeladmin, request, queryset):
     
     response = HttpResponse(content_type='text')
 
-    previous_month_patients = Patient.objects.raw("select p.id, p    .name, p.first_name "+  
+    previous_month_patients = Patient.objects.raw("select p.id, p.name, p.first_name "+  
         "from public.invoices_patient p, public.invoices_prestation prest "+
         "where p.id = prest.patient_id "+
-        "and prest.date between '2014-02-01'::DATE and '2014-02-28'::DATE "+ 
+        "and prest.date between '2014-02-01'::DATE and '2014-02-28'::DATE "+
+        "and p.private_patient = 'f' "+ 
         "and (select count(inv.id) from public.invoices_invoiceitem inv "+
         "where inv.invoice_date between '2014-02-01'::DATE and '2014-02-28'::DATE "+ 
         "and inv.patient_id = p.id) = 0" + 

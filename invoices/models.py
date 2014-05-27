@@ -99,13 +99,17 @@ class Prestation(models.Model):
         return 'code: %s - nom patient: %s' % (self.carecode.code , self.patient.name)
 
 def get_default_invoice_number():
-        for _last_invoice in PrivateInvoiceItem.objects.all().order_by("-invoice_number"):
-            try:
-                _n = int(_last_invoice.invoice_number)
-                return _n+1
-            except:
-                pass
-        return 00000
+    #for _last_invoice in InvoiceItem.objects.all().order_by("-invoice_number")[0]:
+    try:
+        max1 = int(InvoiceItem.objects.all().order_by("-invoice_number")[0].invoice_number)
+    except:
+        max1 = 0
+    #for _last_private_invoice in PrivateInvoiceItem.objects.all().order_by("-invoice_number")[0]:
+    try:
+        max2 = int (PrivateInvoiceItem.objects.all().order_by("-invoice_number")[0].invoice_number)
+    except:
+        max2 = 0
+    return max(max1, max2) + 1
     
 class InvoiceItem(models.Model):
     invoice_number = models.CharField(max_length=50, default = get_default_invoice_number)
