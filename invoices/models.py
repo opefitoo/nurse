@@ -118,6 +118,7 @@ class InvoiceItem(models.Model):
     invoice_date = models.DateField('Invoice date')
     invoice_sent = models.BooleanField()
     invoice_paid = models.BooleanField()
+    medical_prescription_date = models.DateField('Date ordonnance', null=True, blank=True)
     patient = models.ForeignKey(Patient, related_name='patient', help_text='choisir parmi ces patients pour le mois precedent')
     prestations = models.ManyToManyField(Prestation, related_name='prestations', editable=False, null=True, blank=True)
     
