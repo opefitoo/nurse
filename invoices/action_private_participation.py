@@ -84,7 +84,7 @@ def _build_invoices(prestations, invoice_number, invoice_date, prescription_date
     patientFirstName = '';
     patientAddress = ''
 
-    data.append(('Num. titre', 'Prestation', 'Date', 'Nombre', 'Brut', 'Net', 'Heure', 'P. Pers','Executant'))
+    data.append(('Num. titre', 'Prestation', 'Date', 'Nombre', 'Brut', 'CNS', 'Part. Client'))
     #import pydevd; pydevd.settrace()
     pytz_chicago = pytz.timezone("America/Chicago")
     for presta in prestations:
@@ -100,16 +100,15 @@ def _build_invoices(prestations, invoice_number, invoice_date, prescription_date
                      (pytz_chicago.normalize(presta.date)).strftime('%d/%m/%Y'), 
                      '1', 
                      presta.carecode.gross_amount, 
-                     presta.net_amount, 
-                     (pytz_chicago.normalize(presta.date)).strftime('%H:%M'),  
-                     "", 
-                     "300744-44"))
+                     presta.net_amount,                       
+                     "%10.2f" % (decimal.Decimal(presta.carecode.gross_amount) - decimal.Decimal(presta.net_amount))
+                     ))
     
     #grossTotal = 0
     #netTotal = 0
    
     for x in range(len(data)  , 22):
-        data.append((x, '', '', '', '', '', '', '',''))
+        data.append((x, '', '', '', '', '',''))
             
     newData = []
     for y in range(0, len(data) -1) :
@@ -117,11 +116,11 @@ def _build_invoices(prestations, invoice_number, invoice_date, prescription_date
         if(y % 10 == 0 and y != 0):
             _gross_sum = _compute_sum(data[y-9:y+1], 4)
             _net_sum = _compute_sum(data[y-9:y+1], 5)
-            newData.append(('', '', '', 'Sous-Total', _gross_sum, _net_sum, '', '',''))
+            _part_sum = _compute_sum(data[y-9:y+1], 6)
+            newData.append(('', '', '', 'Sous-Total', "%10.2f" % _gross_sum, "%10.2f" % _net_sum, "%10.2f" % _part_sum ))
     _total_facture = _compute_sum(data[1:], 5)
-    import decimal
     _participation_personnelle = decimal.Decimal(_compute_sum(data[1:], 4)) - decimal.Decimal(_total_facture) 
-    newData.append(('', '', '', 'Total', _compute_sum(data[1:], 4), _compute_sum(data[1:], 5), '', '',''))
+    newData.append(('', '', '', 'Total', "%10.2f" % _compute_sum(data[1:], 4), "%10.2f" % _compute_sum(data[1:], 5), "%10.2f" % _compute_sum(data[1:], 6)))
             
             
     headerData = [['IDENTIFICATION DU FOURNISSEUR DE SOINS DE SANTE\n'
@@ -151,7 +150,7 @@ def _build_invoices(prestations, invoice_number, invoice_date, prescription_date
                        ]))
     
     
-    table = Table(newData, 9*[2*cm], 24*[0.5*cm] )
+    table = Table(newData, 9*[2.5*cm], 24*[0.5*cm] )
     table.setStyle(TableStyle([('ALIGN',(1,1),(-2,-2),'LEFT'),
                        ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
                        ('ALIGN',(0,-1), (-6,-1),'RIGHT'),
@@ -192,11 +191,11 @@ def _build_invoices(prestations, invoice_number, invoice_date, prescription_date
     elements.append(Spacer(1, 18))
     elements.append(_2derniers_cases)
     elements.append(Spacer(1, 18))
-    _total_a_payer = Table([["Total "+ u"à"+ " payer:",  "%10.2f Euros" % _participation_personnelle ]], [10*cm, 5*cm], 1*[0.5*cm], hAlign='LEFT')
+    _total_a_payer = Table([["Total "+ u"à"+ " payer:", "%10.2f Euros" % _participation_personnelle ]], [10*cm, 5*cm], 1*[0.5*cm], hAlign='LEFT')
+    #_total_a_payer = Table([["Total "+ u"à"+ " payer:", P0 ]], [10*cm, 5*cm], 1*[0.5*cm], hAlign='LEFT')
     elements.append(Spacer(1, 18))
     elements.append( _total_a_payer )
     elements.append(Spacer(1, 18))
-    
     _pouracquit_signature = Table([["Pour acquit, le:", "Signature et cachet"]], [10*cm, 10*cm], 1*[0.5*cm], hAlign='LEFT')
     
     _infos_iban = Table([["LU40 0019 2255 7386 6000 BCEELULL"]], [10*cm], 1*[0.5*cm], hAlign='LEFT')
@@ -217,7 +216,7 @@ def _compute_sum(data, position):
     sum = 0
     for x in data:
         if x[position] != "" :
-            sum += x[position]
+            sum += decimal.Decimal(x[position])
     return sum
     
     
