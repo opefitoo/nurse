@@ -33,10 +33,11 @@ def previous_months_invoices_august(modeladmin, request, queryset):
         "order by p.name")
     invoice_counters = 0
     for p in previous_month_patients:
-        invoiceitem = InvoiceItem(patient=p,
-                                  invoice_date=datetime.datetime(2014, 08, 31), 
-                                  invoice_sent=False,
-                                  invoice_paid=False)
+        invoiceitem = InvoiceItem(patient=p)
+#         ,
+#                                   invoice_date =datetime.datetime(2014,08, 31), 
+#                                   invoice_sent=False,
+#                                   invoice_paid=False)
         invoiceitem.clean()
         invoiceitem.save()
         invoice_counters  = invoice_counters + 1 
