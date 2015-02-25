@@ -19,7 +19,7 @@ import datetime
 
 def previous_months_invoices_august(modeladmin, request, queryset):
     
-    response = HttpResponse(content_type='text')
+    #response = HttpResponse(content_type='text')
     
     previous_month_patients = Patient.objects.raw("select p.id, p.name, p.first_name "+  
         "from public.invoices_patient p, public.invoices_prestation prest "+
@@ -33,9 +33,9 @@ def previous_months_invoices_august(modeladmin, request, queryset):
         "order by p.name")
     invoice_counters = 0
     for p in previous_month_patients:
-        invoiceitem = InvoiceItem(patient=p, 
+        invoiceitem = InvoiceItem(patient=p,
                                   invoice_date=datetime.datetime(2014, 08, 31), 
-                                  invoice_sent=False, 
+                                  invoice_sent=False,
                                   invoice_paid=False)
         invoiceitem.clean()
         invoiceitem.save()
